@@ -8,8 +8,8 @@ import 'package:flutter/material.dart';
 class LWColorPicker extends StatefulWidget{
   LWColorPicker({
     this.callback,
-    this.width: 500.0,
-    this.heightToWidthRatio: 0.7,
+    this.width: 300.0,
+    this.heightToWidthRatio: .69,
     }
   );
   final ValueChanged<Color> callback;
@@ -27,16 +27,55 @@ class LWColorPickerState extends State<LWColorPicker> {
   double saturation;
   double value;
 
-  void _update(){
-    if(widget.callback != null){
-      widget.callback(getCurrentColor());
-    }
-
-    setState((){});
-  }
-
   Color getCurrentColor(){
     return HSVColor.fromAHSV(1.0, hue, saturation, value).toColor();
+  }
+
+  void setCurrentColor(Color color){
+    HSVColor next = HSVColor.fromColor(color);
+    hue = next.hue;
+    saturation = next.saturation;
+    value = next.value;
+  }
+
+  int _validateColorInput(String input){
+    bool stringError = false;
+
+    switch(input.toUpperCase()){
+      case "F":
+      case "FUL":
+        return 255;
+      case "Z":
+      case "ZRO":
+      case "B":
+      case "BLK":
+      case "OUT":
+        return 0;
+      case "DON":
+        return 69;
+      default:
+        break;
+    }
+
+    print("thing");
+
+    int val = int.parse(
+      input, 
+      onError: (error){
+        return 0;
+    });
+    
+    if(stringError){
+      return 0;
+    }
+
+    if(val > 255){
+      val = 255;    
+    } else if(val < 0){
+      val = 0;
+    }
+
+    return val;
   }
 
   @override
@@ -52,6 +91,9 @@ class LWColorPickerState extends State<LWColorPicker> {
   Widget build(BuildContext context) {
     double width = widget.width;
     double height = width * widget.heightToWidthRatio;
+    TextEditingController _controllerR = new TextEditingController();
+    TextEditingController _controllerG = new TextEditingController();
+    TextEditingController _controllerB = new TextEditingController();
 
     return Column(
       children: <Widget>[
@@ -59,12 +101,13 @@ class LWColorPickerState extends State<LWColorPicker> {
           width: width,
           height: height,
           child: GestureDetector(
+            onPanStart: (DragStartDetails details){
+            },
             onPanUpdate: (DragUpdateDetails details){
               RenderBox box = context.findRenderObject();
               Offset localOffset = box.globalToLocal(details.globalPosition);
-              print("hi");
               setState(() {
-                this.hue = (localOffset.dx.clamp(0.0, width) / width) * 360.0;
+                this.hue = ((localOffset.dx.clamp(0.0, width) / width) * 300.0);
                 this.saturation = 1 - localOffset.dy.clamp(0.0, height) / height;
               });
             },
@@ -78,16 +121,132 @@ class LWColorPickerState extends State<LWColorPicker> {
             ),
           ),
         ),
-        Slider(
-          onChanged: (val){
-            setState(() {
-              this.value = val;
-            });
-          },
-          value: this.value,
+        Container(
+          width: width,
+          child: Slider(
+            onChanged: (val){
+              setState(() {
+                this.value = val;
+              });
+            },
+            value: this.value,
+          ),
+        ),
+        Container(
+          width: width,
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: Text
+                  (
+                    "R",
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                Expanded(
+                  child: Text
+                  (
+                    "G",
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                Expanded(
+                  child: Text
+                  (
+                    "B",
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            )
+
+        ),
+        Container(
+          width: width,
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: TextField(
+                  controller: _controllerR,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: getCurrentColor().red.toString()
+                  ),
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.center,
+
+                  onChanged: (val){
+                    if(val.length >= 3){
+                      setState(() {
+                        setCurrentColor(getCurrentColor().withRed(_validateColorInput(val)));
+                        _controllerR.clear();                    
+                      });
+                    }
+                  },
+                  onSubmitted: (val){
+                    setState(() {
+                      setCurrentColor(getCurrentColor().withRed(_validateColorInput(val)));
+                      _controllerR.clear();                    
+                    });
+                  },
+                ),
+              ),
+              Expanded(
+                child: TextField(
+                  controller: _controllerG,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: getCurrentColor().green.toString()
+                  ),
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.center,
+
+                  onChanged: (val){
+                    if(val.length >= 3){
+                      setState(() {
+                        setCurrentColor(getCurrentColor().withGreen(_validateColorInput(val)));
+                        _controllerG.clear();                    
+                      });
+                    }
+                  },
+                  onSubmitted: (val){
+                    setState(() {
+                      setCurrentColor(getCurrentColor().withGreen(_validateColorInput(val)));
+                      _controllerG.clear();                    
+                    });
+                  },
+                ),
+              ),
+              Expanded(
+                child: TextField(
+                  controller: _controllerB,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: getCurrentColor().blue.toString(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.center,
+                  onChanged: (val){
+                    if(val.length >= 3){
+                      setState(() {
+                        setCurrentColor(getCurrentColor().withBlue(_validateColorInput(val)));
+                        _controllerB.clear();                    
+                      });
+                    }
+                  },
+                  onSubmitted: (val){
+                    setState(() {
+                      setCurrentColor(getCurrentColor().withBlue(_validateColorInput(val)));
+                      _controllerB.clear();                    
+                    });
+                  },
+                ),
+              )
+            ],
+          ),
         )
       ],
-    );
+    ); 
   }
 }
 
@@ -138,14 +297,14 @@ class ColorPainter extends CustomPainter {
           ..shader = gradientBW.createShader(rect)
           ..blendMode = BlendMode.lighten);
     canvas.drawCircle(
-        Offset(size.width * (hue / 360.0), size.height * (1 - saturation)),
+        Offset(size.width * (hue / 300.0), size.height * (1 - saturation)),
         size.height * 0.04,
         Paint()
-          ..color = HSVColor.fromAHSV(1.0, hue, saturation, value).toColor()
-          ..strokeWidth = 1.5
+          ..color = HSVColor.fromAHSV(1.0, hue, saturation, (1-value)).toColor()
+          ..strokeWidth = 3.0
           ..style = PaintingStyle.stroke);
   }
 
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
+  bool shouldRepaint(CustomPainter oldDelegate) => true;
 }
