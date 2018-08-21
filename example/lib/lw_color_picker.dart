@@ -1,4 +1,5 @@
 library lw_color_picker;
+import 'dart:math';
 import 'package:flutter/material.dart';
 
 /*
@@ -29,6 +30,12 @@ class LWColorPickerState extends State<LWColorPicker> {
 
   Color getCurrentColor(){
     return HSVColor.fromAHSV(1.0, hue, saturation, value).toColor();
+  }
+
+  void _callback(){
+    if(widget.callback != null){
+      widget.callback(getCurrentColor());
+    }
   }
 
   void setCurrentColor(Color color){
@@ -109,6 +116,7 @@ class LWColorPickerState extends State<LWColorPicker> {
               setState(() {
                 this.hue = ((localOffset.dx.clamp(0.0, width) / width) * 300.0);
                 this.saturation = 1 - localOffset.dy.clamp(0.0, height) / height;
+                _callback();
               });
             },
             child: CustomPaint(
@@ -127,6 +135,7 @@ class LWColorPickerState extends State<LWColorPicker> {
             onChanged: (val){
               setState(() {
                 this.value = val;
+                _callback();
               });
             },
             value: this.value,
@@ -179,6 +188,7 @@ class LWColorPickerState extends State<LWColorPicker> {
                     if(val.length >= 3){
                       setState(() {
                         setCurrentColor(getCurrentColor().withRed(_validateColorInput(val)));
+                        _callback();
                         _controllerR.clear();                    
                       });
                     }
@@ -186,6 +196,7 @@ class LWColorPickerState extends State<LWColorPicker> {
                   onSubmitted: (val){
                     setState(() {
                       setCurrentColor(getCurrentColor().withRed(_validateColorInput(val)));
+                      _callback();
                       _controllerR.clear();                    
                     });
                   },
@@ -205,6 +216,7 @@ class LWColorPickerState extends State<LWColorPicker> {
                     if(val.length >= 3){
                       setState(() {
                         setCurrentColor(getCurrentColor().withGreen(_validateColorInput(val)));
+                        _callback();
                         _controllerG.clear();                    
                       });
                     }
@@ -212,6 +224,7 @@ class LWColorPickerState extends State<LWColorPicker> {
                   onSubmitted: (val){
                     setState(() {
                       setCurrentColor(getCurrentColor().withGreen(_validateColorInput(val)));
+                      _callback();
                       _controllerG.clear();                    
                     });
                   },
@@ -230,6 +243,7 @@ class LWColorPickerState extends State<LWColorPicker> {
                     if(val.length >= 3){
                       setState(() {
                         setCurrentColor(getCurrentColor().withBlue(_validateColorInput(val)));
+                        _callback();
                         _controllerB.clear();                    
                       });
                     }
@@ -237,6 +251,7 @@ class LWColorPickerState extends State<LWColorPicker> {
                   onSubmitted: (val){
                     setState(() {
                       setCurrentColor(getCurrentColor().withBlue(_validateColorInput(val)));
+                      _callback();
                       _controllerB.clear();                    
                     });
                   },
@@ -300,7 +315,7 @@ class ColorPainter extends CustomPainter {
         Offset(size.width * (hue / 300.0), size.height * (1 - saturation)),
         size.height * 0.04,
         Paint()
-          ..color = HSVColor.fromAHSV(1.0, hue, saturation, (1-value)).toColor()
+          ..color = HSVColor.fromAHSV(1.0, hue, saturation, (1-pow(value, 0.3))).toColor()
           ..strokeWidth = 3.0
           ..style = PaintingStyle.stroke);
   }
