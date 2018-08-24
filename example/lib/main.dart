@@ -29,8 +29,11 @@ class _MyAppState extends State<MyApp> {
     return Card(
       child: 
       Center(
-        child: LWColorPicker(width: width*0.89),
+        child: LWColorPicker(width: width*0.89, callback: (color){
+          print(color.toString());
+        },),
       )
     );
   }
+
 }

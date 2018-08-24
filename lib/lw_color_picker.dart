@@ -9,11 +9,13 @@ import 'package:flutter/material.dart';
 class LWColorPicker extends StatefulWidget{
   LWColorPicker({
     this.callback,
+    this.hasKeyboard,
     this.width: 300.0,
     this.heightToWidthRatio: .69,
     }
   );
   final ValueChanged<Color> callback;
+  final ValueChanged<bool> hasKeyboard;
   final double width;
   final double heightToWidthRatio;
 
@@ -24,6 +26,9 @@ class LWColorPicker extends StatefulWidget{
 }
 
 class LWColorPickerState extends State<LWColorPicker> {
+  FocusNode _focusR = new FocusNode();
+  FocusNode _focusG = new FocusNode();
+  FocusNode _focusB = new FocusNode();
   double hue;
   double saturation;
   double value;
@@ -64,8 +69,6 @@ class LWColorPickerState extends State<LWColorPicker> {
         break;
     }
 
-    print("thing");
-
     int val = int.parse(
       input, 
       onError: (error){
@@ -85,16 +88,39 @@ class LWColorPickerState extends State<LWColorPicker> {
     return val;
   }
 
+  void _focusChanged(){
+    bool retVal = false;
+    if(_focusR.hasFocus){
+      retVal = true;
+    }
+    if(_focusG.hasFocus){
+      retVal = true;
+    }
+    if(_focusB.hasFocus){
+      retVal = true;
+    }
+    if(widget.hasKeyboard != null){
+      widget.hasKeyboard(retVal);
+    }
+
+  }
+
   @override
   initState() {
     super.initState();
     HSVColor color = HSVColor.fromColor(Colors.purple);
+
+    _focusR.addListener(_focusChanged);
+    _focusG.addListener(_focusChanged);
+    _focusB.addListener(_focusChanged);
+
     hue = color.hue;
     saturation = color.saturation;
     value = 1.0;
   }
 
-    @override
+
+  @override
   Widget build(BuildContext context) {
     double width = widget.width;
     double height = width * widget.heightToWidthRatio;
@@ -177,6 +203,7 @@ class LWColorPickerState extends State<LWColorPicker> {
               Expanded(
                 child: TextField(
                   controller: _controllerR,
+                  focusNode: _focusR,
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     hintText: getCurrentColor().red.toString()
@@ -205,13 +232,14 @@ class LWColorPickerState extends State<LWColorPicker> {
               Expanded(
                 child: TextField(
                   controller: _controllerG,
+                  focusNode: _focusG,
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     hintText: getCurrentColor().green.toString()
                   ),
                   keyboardType: TextInputType.number,
                   textAlign: TextAlign.center,
-
+                  
                   onChanged: (val){
                     if(val.length >= 3){
                       setState(() {
@@ -233,6 +261,7 @@ class LWColorPickerState extends State<LWColorPicker> {
               Expanded(
                 child: TextField(
                   controller: _controllerB,
+                  focusNode: _focusB,
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     hintText: getCurrentColor().blue.toString(),
